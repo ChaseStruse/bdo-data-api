@@ -1,31 +1,6 @@
 import Vapor
 import Fluent
 
-struct gearScoreRequest: Content {
-    var ap: Int
-    var dp: Int
-    var aap: Int
-}
-
-struct Character: Content {
-    var familyName: String
-    var familyFame: Int
-    var mainClass: String
-    var gearScore: Int
-    
-    init(familyName: String, familyFame: Int, mainClass: String, gearScore: Int) {
-        self.familyName = familyName
-        self.familyFame = familyFame
-        self.mainClass = mainClass
-        self.gearScore = gearScore
-    }
-}
-
-struct CharacterPostResponse: Content {
-    var message: String
-    var characterCreated: Character
-}
-
 struct AdventurerController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let adventurerRoutes = routes.grouped("adventurer")
@@ -40,6 +15,7 @@ struct AdventurerController: RouteCollection {
         adventurerRoutes.group("character") { adventurerRoute in
             adventurerRoute.get(use: getCharacter)
             adventurerRoute.post(use: createCharacter)
+            adventurerRoute.put(use: updateCharacter)
         }
     }
     
@@ -52,13 +28,19 @@ struct AdventurerController: RouteCollection {
         return String((request.ap + request.aap)/2 + request.dp)
     }
     
-    @Sendable func getCharacter(_req: Request) async throws -> Character {
-        return Character(familyName: "Test", familyFame: 1, mainClass: "Striker", gearScore: 100)
+    @Sendable func getCharacter(_req: Request) async throws -> CharacterResponse {
+        let character = Character(familyName: "Test", familyFame: 1, mainClass: "Striker", gearScore: 100)
+        return CharacterResponse(message: "Successfully found Character", characterCreated: character)
     }
     
-    @Sendable func createCharacter(_req: Request) async throws -> CharacterPostResponse {
+    @Sendable func createCharacter(_req: Request) async throws -> CharacterResponse {
         let request = try _req.content.decode(Character.self)
-        return CharacterPostResponse(message: "Successfully created", characterCreated: request)
+        return CharacterResponse(message: "Successfully created", characterCreated: request)
+    }
+    
+    @Sendable func updateCharacter(_req: Request) async throws -> CharacterResponse {
+        let request = try _req.content.decode(Character.self)
+        return CharacterResponse(message: "Successfully updated", characterCreated: request)
     }
     
 
